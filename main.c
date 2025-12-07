@@ -1,20 +1,7 @@
+#include <string.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <unistd.h>
-
-// The system evolves in discrete time steps (generations)
-// based on the state of neighbors in the previous step:
-//
-// Underpopulation: A live cell with fewer than two
-// live neighbors dies.
-//
-// Survival: A live cell with two or three live neighbors
-// stays alive.
-//
-// Overpopulation: A live cell with more than three live
-// neighbors dies.
-//
-// Reproduction: A dead cell with exactly three live
-// neighbors becomes a live cell
 
 #define cols 25
 #define rows 25
@@ -87,33 +74,152 @@ void setgrid2(int x, int y, char *grid, char state) {
   grid[point] = state;
 }
 
-int main() {
-  char board[cols * rows];
+int neighcount(int x, int y, char *grid) {
+  int res = 0;
 
-  setgrid2(1,1, board, alive);
-  setgrid2(25,1, board, alive);
-  setgrid2(10,10, board, alive);
-  setgrid2(10,11, board, alive);
-  setgrid2(10,12, board, alive);
+  for (int i = x - 1; i <= x + 1; i++) {
+    for (int j = y - 1; j <= y + 1; j++) {
+      if (x == i && y == j) {
+        continue;
+      }
+      int point = coordtoidx(i, j);
+      if (point != -1) {
+        if (grid[point] == alive) {
+          res++;
+        }
+        // printf("x:%d y:%d char:%c\n",i, j, grid[point]);
+      }
+    }
+  }
 
+  // printf("%d\n", res);
+  return res;
+
+  // x-1, y+1
+  // x-1, y
+  // x-1, y-1
+
+  // x+1, y+1
+  // x+1, y
+  // x+1, y-1
+
+  // x, y-1
+  // x, y+1
+}
+
+void printgrid(char *grid) {
   for (int y = rows - 1; y >= 0; y--) {
     printf("%02d ", y + 1);
     for (int x = 1; x <= cols; x++) {
       int point = y * cols + x;
 
-      printcell(point, board);
+      printcell(point, grid);
       // printf("%d", point);
     }
 
     printf("\n");
   }
+}
+
+char *propagate(char *b1) {
+  char *board2 = malloc(cols * rows);
+
+  for (int y = rows - 1; y >= 0; y--) {
+    for (int x = 1; x <= cols; x++) {
+
+      int p = coordtoidx(x, y);
+      int cnt = neighcount(x, y, b1);
+
+      /* if (cnt == 3) { */
+      /*   printf("%d %d %d\n", cnt, x, y); */
+      /*   printf("%c\n", b1[p]); */
+      /* } */
+
+      // Reproduction: A dead cell with exactly three live
+      // neighbors becomes a live cell
+      // i
+      if (b1[p] == dead && cnt == 3) {
+        board2[p] = alive;
+        continue;
+      }
+
+      if (b1[p] == alive) {
+        if (cnt < 2) {
+          board2[p] = dead;
+          continue;
+        }
+        if (cnt > 3) {
+          board2[p] = dead;
+          continue;
+        }
+        if (cnt == 2 || cnt == 3) {
+          board2[p] = alive;
+          continue;
+        }
+      }
+      // fallbask;
+      board2[p] = dead;
+
+      // int cnt = neighcount(yy, xx, b1);
+      //  if (b1[]
+      // Underpopulation: A live cell with fewer than two
+      // live neighbors dies.
+      //
+      // Survival: A live cell with two or three live neighbors
+      // stays alive.
+      //
+      // Overpopulation: A live cell with more than three live
+      // neighbors dies.
+      //
+    }
+  }
+
+  return board2;
+}
+
+int main() {
+  char *board = malloc(cols * rows);
+  memset(board, dead, cols * rows);
+
+  setgrid2(1, 1, board, alive);
+  setgrid2(25, 1, board, alive);
+
+  setgrid2(10, 10, board, alive);
+  setgrid2(10, 11, board, alive);
+  setgrid2(10, 12, board, alive);
+
+  neighcount(10, 11, board);
+  neighcount(1, 1, board);
+
+  while (1) {
+
+    printgrid(board);
+    clear();
+    board = propagate(board);
+    usleep(1000000); // 400 ms // 1 sec
+  }
+
 
   printf("\n");
 
   // do here the changes
 
-  // usleep(1000000); // 400 ms // 1 sec
   // }
 
   // printf("\n");
 }
+
+// The system evolves in discrete time steps (generations)
+// based on the state of neighbors in the previous step:
+//
+// Underpopulation: A live cell with fewer than two
+// live neighbors dies.
+//
+// Survival: A live cell with two or three live neighbors
+// stays alive.
+//
+// Overpopulation: A live cell with more than three live
+// neighbors dies.
+//
+// Reproduction: A dead cell with exactly three live
+// neighbors becomes a live cell
