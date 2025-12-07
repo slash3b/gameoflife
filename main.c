@@ -188,15 +188,27 @@ int main() {
   setgrid2(10, 11, board, alive);
   setgrid2(10, 12, board, alive);
 
-  neighcount(10, 11, board);
-  neighcount(1, 1, board);
+
+  setgrid2(4, 5, board, alive);
+  setgrid2(5, 5, board, alive);
+  setgrid2(6, 5, board, alive);
+  setgrid2(7, 5, board, alive);
+
+
+  setgrid2(7, 20, board, alive);
+  setgrid2(8, 20, board, alive);
+  setgrid2(9, 20, board, alive);
+  setgrid2(8, 19, board, alive);
+
+
+  /* neighcount(10, 11, board); */
+  /* neighcount(1, 1, board); */
 
   while (1) {
-
-    printgrid(board);
     clear();
+    printgrid(board);
     board = propagate(board);
-    usleep(1000000); // 400 ms // 1 sec
+    usleep(500000); // 500 ms // 1 sec
   }
 
 
